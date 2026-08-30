@@ -56,10 +56,11 @@ sub clear_screen {
 }
 
 sub print_line {
-    my ($self, $number, $text) = @_;
+    my ($self, $number, $text, $stay) = @_;
     $text = '' unless defined $text;
     $text =~ s/"/""/g;
-    return $self->line($number, qq{PRINT "$text"});
+    my $suffix = $stay ? ';' : '';
+    return $self->line($number, qq{PRINT "$text"$suffix});
 }
 
 sub source {

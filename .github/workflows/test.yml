@@ -1,0 +1,61 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  perl:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        perl: ['5.16', '5.26', '5.36', '5.40', 'latest']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+      - name: Install dependencies
+        run: |
+          cpanm --notest --installdeps .
+          cpanm --notest DBI DBD::SQLite
+      - name: Build and test
+        run: |
+          perl Makefile.PL
+          make
+          make test
+
+  dist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: 'latest'
+      - name: Install dependencies
+        run: |
+          cpanm --notest --installdeps .
+          cpanm --notest DBI DBD::SQLite
+      - name: Build distribution and disttest
+        run: |
+          perl Makefile.PL
+          make manifest
+          make disttest
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: 'latest'
+      - name: Install dependencies
+        run: |
+          cpanm --notest --installdeps .
+          cpanm --notest DBI DBD::SQLite Devel::Cover
+      - name: Coverage
+        run: |
+          cover -delete
+          HARNESS_PERL_SWITCHES=-MDevel::Cover prove -lr t
+          cover

@@ -11,11 +11,12 @@ sub new {
     my %self = (
         name   => uc($args{name}),
         type   => uc($args{type} || 'SEQ'),
+        role   => uc($args{role} || 'RESOURCE'),
         read   => $args{read},
         write  => $args{write},
         listed => exists $args{listed} ? !!$args{listed} : 1,
     );
-    return baptise \%self, $class, qw(name type read write listed);
+    return baptise \%self, $class, qw(name type role read write listed);
 }
 
 1;

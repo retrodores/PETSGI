@@ -4,17 +4,23 @@ use strict;
 use warnings;
 use Dispatch::Fu qw(dispatch on);
 use Util::H2O::More qw(baptise);
+use PETSGI::Context;
 use PETSGI::Resource;
 use PETSGI::Response;
+use PETSGI::Target::PET40;
 
 sub new {
     my ($class, %args) = @_;
     my %self = (
-        resources    => {},
-        fallback     => $args{fallback},
-        materializer => $args{materializer},
+        resources        => {},
+        fallback         => $args{fallback},
+        materializer     => $args{materializer},
+        target           => $args{target} || PETSGI::Target::PET40->new,
+        session_store    => $args{session_store},
+        session_resolver => $args{session_resolver},
     );
-    return baptise \%self, $class, qw(resources fallback materializer);
+    return baptise \%self, $class,
+        qw(resources fallback materializer target session_store session_resolver);
 }
 
 sub resource {
@@ -22,6 +28,55 @@ sub resource {
     my $resource = PETSGI::Resource->new(%args);
     $self->resources->{$resource->name} = $resource;
     return $resource;
+}
+
+sub _context {
+    my ($self, $req, $resource) = @_;
+    my $token;
+    if (ref($self->session_resolver) eq 'CODE') {
+        $token = $self->session_resolver->($req, $self, $resource);
+    }
+    return PETSGI::Context->new(
+        request       => $req,
+        application   => $self,
+        resource      => $resource,
+        target        => $self->target,
+        session_store => $self->session_store,
+        session_token => $token,
+    );
+}
+
+# Executable server-rendered application state. The callback receives a
+# PETSGI::Context and may return a PETSGI::UI::Screen, BASIC::Program, or PRG bytes.
+sub view {
+    my ($self, %args) = @_;
+    my $render = delete $args{render};
+    die "view render callback required\n" unless ref($render) eq 'CODE';
+    $args{type} ||= 'PRG';
+    $args{role} ||= 'VIEW';
+    $args{read} = sub {
+        my ($req, $app, $resource) = @_;
+        my $ctx = $app->_context($req, $resource);
+        return $ctx->compile_view($render->($ctx));
+    };
+    return $self->resource(%args);
+}
+
+# Application submission endpoint. With stock PETdisk firmware the callback is
+# invoked once per PUT block; there is no implicit close/commit notification.
+sub action {
+    my ($self, %args) = @_;
+    my $write = delete $args{write};
+    die "action write callback required\n" unless ref($write) eq 'CODE';
+    $args{type} ||= 'SEQ';
+    $args{role} ||= 'ACTION';
+    $args{read} ||= sub { '' };
+    $args{write} = sub {
+        my ($req, $app, $resource) = @_;
+        my $ctx = $app->_context($req, $resource);
+        return $write->($ctx, $req->body, $req->operation);
+    };
+    return $self->resource(%args);
 }
 
 sub directory_names {

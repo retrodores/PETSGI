@@ -8,7 +8,7 @@ WriteMakefile(
     ABSTRACT      => 'PET Server Gateway Interface for PETdisk MAX applications',
     AUTHOR        => 'PETSGI contributors',
     LICENSE       => 'perl_5',
-    MIN_PERL_VERSION => '5.010',
+    MIN_PERL_VERSION => '5.016',
     PREREQ_PM     => {
         'CGI::Tiny'       => '1.003',
         'Dispatch::Fu'    => '1.06',

@@ -9,3 +9,8 @@ Revision history for PETSGI
       - added initial 40-column PET target and tokenized BASIC PRG generator
       - added optional SQLite identity/session state store
       - added PETdisk MAX protocol mock, unit tests, and GitHub Actions CI
+      - added PETSGI::Context as the application-facing runtime boundary
+      - added semantic view() and action() application APIs
+      - added initial PETSGI::UI::Screen intermediate representation for 40-column UX
+      - documented the executable-view/reactive-resource full-stack application model
+      - added tests for semantic UI, executable views, dynamic SEQ resources, and actions

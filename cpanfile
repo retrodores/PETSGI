@@ -1,4 +1,4 @@
-requires 'perl', '5.010';
+requires 'perl', '5.016';
 requires 'CGI::Tiny', '1.003';
 requires 'Dispatch::Fu', '1.06';
 requires 'Util::H2O::More', '0.4.3';
