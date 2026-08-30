@@ -1,0 +1,11 @@
+Revision history for PETSGI
+
+0.01  2026-08-30
+      - initial PETSGI protocol and application framework prototype
+      - added CGI::Tiny adapter and Dispatch::Fu operation routing
+      - added safe petdisk.php-compatible filesystem application
+      - added PRG/SEQ/D64 directory, ranged read, PUT, block update, and TIME support
+      - added filesystem-backed materialization for dynamic CGI resources
+      - added initial 40-column PET target and tokenized BASIC PRG generator
+      - added optional SQLite identity/session state store
+      - added PETdisk MAX protocol mock, unit tests, and GitHub Actions CI
